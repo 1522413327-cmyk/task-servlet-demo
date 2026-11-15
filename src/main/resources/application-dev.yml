@@ -1,0 +1,33 @@
+# ===== dev：本机开发，连本地 MySQL，日志全开便于调试 SQL =====
+server:
+  port: 8088                  # 本机 IDEA 占用了 8080，故改用 8088
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/taskmaster?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    # 敏感信息一律走环境变量，仓库里不出现任何真实口令。
+    # 本机启动前先设置（Windows cmd / IDEA 的 Environment variables）：
+    #   set DB_PASSWORD=你的数据库密码
+    # 未设置时默认空串，启动会因鉴权失败而报错——这是故意的，避免静默连错库。
+    username: ${DB_USERNAME:root}
+    password: "${DB_PASSWORD:}"
+    druid:
+      initial-size: 5
+      max-active: 20
+      min-idle: 5
+      max-wait: 60000
+      # 连接有效性检测，避免 MySQL 断开空闲连接后报错
+      validation-query: SELECT 1
+      test-while-idle: true
+
+logging:
+  level:
+    root: info
+    cn.edu.mju.band.mapper: debug
+
+app:
+  task:
+    default-page-size: 5
+    max-page-size: 100

@@ -1,0 +1,43 @@
+# ==============================================================================
+# 主配置：只保留所有环境共用的部分
+# 环境差异（端口 / 数据源 / 日志等级 / 业务参数）拆到：
+#   application-dev.yml / application-test.yml / application-prod.yml
+#
+# 切换环境（命令行参数优先级高于本文件的 active）：
+#   java -jar target/task-servlet-demo.jar --spring.profiles.active=test
+#   mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=test
+#   IDEA: Run Configuration -> Active profiles = test
+# ==============================================================================
+spring:
+  application:
+    name: task-servlet-demo
+  profiles:
+    active: dev                 # 默认开发环境
+
+  # 视图层：Thymeleaf 替代 JSP（prod 会把 cache 覆盖成 true）
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+# MyBatis-Plus：前缀必须是 mybatis-plus，MP 的自动配置只读这里
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: cn.edu.mju.band.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+# 业务参数公共默认值；各环境在 application-{profile}.yml 中覆盖，
+# 由 TaskBuss / TaskController 的 @Value 读取，切换 profile 即生效
+app:
+  task:
+    default-page-size: 5
+    max-page-size: 100

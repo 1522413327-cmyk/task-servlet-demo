@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.mju.band.mapper.TaskMapper">
+
+    <!-- 列名（下划线）映射到实体（驼峰）：due_date -> dueDate -->
+    <resultMap id="taskMap" type="Task">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="status" property="status"/>
+        <result column="priority" property="priority"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+
+    <!-- getAllTasks / findById / insert / update / delete 这 5 段 SQL 已删除：
+         BaseMapper 的 selectList / selectById / insert / updateById / deleteById
+         会自动生成等价语句，id 分别是 selectList / selectById / insert / updateById / deleteById。
+         留着旧 id 反而会与 MP 注入的 statement 抢名字，所以必须删干净。 -->
+
+    <!-- ===== 条件查询 + 分页（MP 无法用 Wrapper 表达，保留手写 SQL） ===== -->
+
+    <!-- 复用的查询条件：title 模糊、status 精确；<where> 自动去掉开头多余的 AND -->
+    <sql id="searchWhere">
+        <where>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <select id="search" resultMap="taskMap">
+        SELECT id, title, status, priority, due_date, create_date
+        FROM t_task
+        <include refid="searchWhere"/>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM t_task
+        <include refid="searchWhere"/>
+    </select>
+
+</mapper>

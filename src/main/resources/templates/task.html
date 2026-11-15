@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>任务列表</title>
+    <style>
+        .pager a, .pager span { margin-right: 10px; }
+        .pager .disabled { color: #aaa; }
+        .query-form { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- ===== 查询表单：任务名称模糊 + 状态精确 =====
+     th:value / th:selected 负责条件回显；th:href / th:action 会自动做 URL 编码，
+     原来 JSP 里手写的 URLEncoder.encode 就不需要了 -->
+<form class="query-form" th:action="@{/task}" method="get">
+    任务名称：<input type="text" name="title" th:value="${title}"/>
+    状态：
+    <select name="status">
+        <option value=""  th:selected="${status == null}">全部</option>
+        <option value="0" th:selected="${status != null and status == 0}">待办</option>
+        <option value="1" th:selected="${status != null and status == 1}">进行中</option>
+        <option value="2" th:selected="${status != null and status == 2}">已完成</option>
+    </select>
+    <input type="hidden" name="pageSize" th:value="${pageSize}"/>
+    <input type="submit" value="查询"/>
+    <a th:href="@{/task}">重置</a>
+</form>
+
+<a th:href="@{/task(opt='add')}">添加</a>
+<a th:href="@{/logout}" style="margin-left:10px;">退出登录</a>
+<span th:if="${session.loginName != null}" th:text="'（当前用户：' + ${session.loginName} + '）'"
+      style="margin-left:10px;color:#888;"></span>
+
+<table width="100%" border="1">
+    <tr>
+        <th>任务编号</th>
+        <th>任务名称</th>
+        <th>优先级别</th>
+        <th>任务状态</th>
+        <th>截止日期</th>
+        <th>创建时间</th>
+        <th>操作</th>
+    </tr>
+    <!-- th:each 遍历控制器放进 Model 的 lst，等价于 JSP 的 for 循环 -->
+    <tr th:each="t : ${lst}">
+        <td th:text="${t.id}"></td>
+        <td th:text="${t.title}"></td>
+        <td th:text="${T(cn.edu.mju.band.util.TaskFormatter).getPriorityText(t.priority)}"></td>
+        <td th:text="${T(cn.edu.mju.band.util.TaskFormatter).getStatusText(t.status)}"></td>
+        <td th:text="${T(cn.edu.mju.band.util.TaskFormatter).formatDate(t.dueDate)}"></td>
+        <td th:text="${T(cn.edu.mju.band.util.TaskFormatter).formatDate(t.createDate)}"></td>
+        <td>
+            <a th:href="@{/task(opt='delete', id=${t.id})}">删除</a>
+            <a th:href="@{/task(opt='update', id=${t.id})}">修改</a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(lst)}">
+        <td colspan="7" align="center">暂无数据</td>
+    </tr>
+</table>
+
+<!-- ===== 分页条：翻页链接里带上 title/status，条件不会丢 ===== -->
+<div class="pager">
+    共 <span th:text="${totalCount}">0</span> 条，第 <span th:text="${pageNo}">1</span>/<span th:text="${totalPages}">1</span> 页
+
+    <th:block th:if="${pageNo > 1}">
+        <a th:href="@{/task(pageNo=1, pageSize=${pageSize}, title=${title}, status=${status})}">首页</a>
+        <a th:href="@{/task(pageNo=${pageNo - 1}, pageSize=${pageSize}, title=${title}, status=${status})}">上一页</a>
+    </th:block>
+    <th:block th:unless="${pageNo > 1}">
+        <span class="disabled">首页</span>
+        <span class="disabled">上一页</span>
+    </th:block>
+
+    <th:block th:if="${pageNo < totalPages}">
+        <a th:href="@{/task(pageNo=${pageNo + 1}, pageSize=${pageSize}, title=${title}, status=${status})}">下一页</a>
+        <a th:href="@{/task(pageNo=${totalPages}, pageSize=${pageSize}, title=${title}, status=${status})}">末页</a>
+    </th:block>
+    <th:block th:unless="${pageNo < totalPages}">
+        <span class="disabled">下一页</span>
+        <span class="disabled">末页</span>
+    </th:block>
+</div>
+</body>
+</html>

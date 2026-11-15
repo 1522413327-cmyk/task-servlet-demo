@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.mju.band.mapper.UserMapper">
+
+    <!-- 这个文件现在是空的，故意保留。
+         原先的 userMap + findByLoginName 已由 BaseMapper 的 selectOne + LambdaQueryWrapper 取代，
+         见 UserBuss#login。
+         若想改回手写 SQL，只需在 UserMapper 接口里加回
+         User findByLoginName(@Param("loginName") String loginName);
+         再把 resultMap 和 select 写回这里即可。 -->
+
+</mapper>

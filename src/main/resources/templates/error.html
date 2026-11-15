@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>操作未能完成</title>
+    <style>
+        body { font-family: "Microsoft YaHei", sans-serif; background: #f5f5f5; }
+        .box { width: 420px; margin: 120px auto; padding: 24px;
+               background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+        .box h2 { margin-top: 0; }
+        .msg { color: #c00; line-height: 1.7; }
+        a { color: #2d8cf0; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>操作未能完成</h2>
+    <!-- 由 @ControllerAdvice 统一放入 Model；静态打开时显示占位文案 -->
+    <p class="msg" th:text="${errorMessage}">请求参数不合法，请检查后重试</p>
+    <a th:href="@{/task}">返回任务列表</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ===== 1) Spring Boot 父工程：统一管理所有依赖版本 ===== -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.2</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>cn.edu.mju.band</groupId>
+    <artifactId>task-servlet-demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <!-- Spring Boot 内嵌 Tomcat，打成可执行 jar（不再需要 war + 外部 Tomcat） -->
+    <packaging>jar</packaging>
+    <name>task-servlet-demo-springboot</name>
+    <description>极简任务系统 - Spring Boot 版（原 SSM + JSP 项目改造）</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <mybatis.plus.version>3.5.18</mybatis.plus.version>
+        <druid.version>1.2.23</druid.version>
+        <hutool.version>5.8.47</hutool.version>
+        <!-- JaCoCo 0.8.11 起支持 Java 21 字节码；本地仓库已缓存该版本 -->
+        <jacoco.version>0.8.11</jacoco.version>
+    </properties>
+
+    <dependencies>
+        <!-- SpringMVC + 内嵌 Tomcat：替代原来的 web.xml + DispatcherServlet 手写配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 模板引擎，替代 JSP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- JDBC + DataSource 自动装配 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- 原生 mybatis-spring-boot-starter 已移除：MyBatis-Plus 的 starter 内部已包含
+             mybatis + mybatis-spring，并接管 SqlSessionFactory 的自动装配；
+             两者同时引入会出现两个自动配置类竞争，且 mybatis.* 配置不再生效 -->
+
+        <!-- MyBatis-Plus（Boot 3 专用 starter）：BaseMapper 通用 CRUD、分页插件、条件构造器 -->
+        <!-- Source: https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-spring-boot3-starter -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>${mybatis.plus.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- 3.5.9 起 JSqlParser 相关能力（PaginationInnerInterceptor 分页插件）被拆到独立模块，必须单独引 -->
+        <!-- Source: https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-jsqlparser -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>${mybatis.plus.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- MySQL 驱动，仅运行期需要 -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Druid：Boot 3 必须用 -3- 的坐标 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-3-starter</artifactId>
+            <version>${druid.version}</version>
+        </dependency>
+
+        <!-- Hutool 工具库：登录验证用其 crypto.digest.MD5 做密码摘要 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+
+        <!-- Lombok：编译期生成 getter/setter/构造器，减少实体类样板代码。
+             版本由 spring-boot-starter-parent 统一管理，不需要自己写 version。
+             optional=true 表示不向下游传递，也不会被打进 fat jar（编译期用完即弃）。 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 实验环节四：Spring Validation 服务端校验。
+             Boot 3 起 validation 不再由 starter-web 传递，必须显式引入（jakarta.validation）。
+             浏览器端的 required / type=date 只是客户端行为，用 curl 直接 POST 即可绕过，
+             所以服务端校验才是最后一道防线。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>task-servlet-demo</finalName>
+        <plugins>
+            <!-- Spring Boot 打包插件：生成可执行的 fat jar，并在这里指定入口类 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>cn.edu.mju.band.TaskApplication</mainClass>
+                    <!-- Lombok 只在编译期生成代码，运行期一个类都用不到，别打进 fat jar -->
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 实验环节五：测试覆盖率度量。
+                 prepare-agent 在测试 JVM 启动参数里挂上 JaCoCo agent，
+                 report 绑定 test 阶段，跑完 mvn test 即生成 target/site/jacoco/index.html -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <!-- 本项目路径含中文目录，Windows 命令行会把 -javaagent 参数里的中文
+                     destfile 编码成乱码，agent 因而静默写不出 exec 数据文件
+                     （表现为 "Skipping JaCoCo execution due to missing execution data file"）。
+                     把数据文件放到纯 ASCII 的系统临时目录，report 从同一路径读取；
+                     HTML 报告仍正常输出到 target/site/jacoco。 -->
+                <configuration>
+                    <destFile>${java.io.tmpdir}/task-servlet-demo-jacoco.exec</destFile>
+                    <dataFile>${java.io.tmpdir}/task-servlet-demo-jacoco.exec</dataFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Spring Boot 父 POM 覆写了 surefire 的 argLine，会让 JaCoCo agent 挂不上
+                 （表现为 "Skipping JaCoCo execution due to missing execution data file"）。
+                 @{argLine} 是 surefire 的延迟替换：JaCoCo prepare-agent 设置的 property
+                 会在这里被展开；没启用 agent 时就是空串，不会变成非法 JVM 参数。 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} -Dfile.encoding=UTF-8</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

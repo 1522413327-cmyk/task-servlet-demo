@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>添加/修改任务</title>
+</head>
+<body>
+<h1>添加/修改任务</h1>
+
+<!-- 环节四：th:object 绑定 TaskForm，th:field 同时生成 name/id 并回填用户输入；
+     th:errors 显示 @Valid 的校验消息。novalidate 关闭浏览器自带的 HTML5 校验，
+     便于课堂演示服务端错误回显 —— 即便不关闭，直接 POST 也能完全绕过客户端校验。 -->
+<form th:action="@{/task}" th:object="${taskForm}" method="post" novalidate>
+    <input type="hidden" th:field="*{opt}"/>
+    <input type="hidden" th:field="*{id}"/>
+
+    <div th:if="${#fields.hasErrors('*')}"
+         style="border:1px solid #e33;background:#fff2f2;padding:8px;margin-bottom:10px;color:#c00;">
+        <strong>请修正以下错误：</strong>
+        <ul>
+            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+        </ul>
+    </div>
+
+    标题：<input type="text" th:field="*{title}"/>
+    <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}"
+          style="color:#c00;font-size:12px;"></span><br>
+    优先级别：
+    <select th:field="*{priority}">
+        <option value="1">低</option>
+        <option value="2">中</option>
+        <option value="3">高</option>
+    </select>
+    <span th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"
+          style="color:#c00;font-size:12px;"></span><br>
+    状态：
+    <select th:field="*{status}">
+        <option value="0">待办</option>
+        <option value="1">进行中</option>
+        <option value="2">已完成</option>
+    </select>
+    <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}"
+          style="color:#c00;font-size:12px;"></span><br>
+    截止日期：<input type="date" th:field="*{dueDate}"/>
+    <span th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}"
+          style="color:#c00;font-size:12px;"></span><br>
+    <input type="submit" value="提交">
+    <a th:href="@{/task}">返回列表</a>
+</form>
+</body>
+</html>
