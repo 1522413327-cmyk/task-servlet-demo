@@ -19,8 +19,14 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
  *
  * <p>静态资源 404（NoResourceFoundException）原样交回容器，保持 404 语义，
  * 避免被全局兜底误当成系统错误。</p>
+ *
+ * <p><b>为什么限定 basePackages</b>（实验环节二补）：{@link cn.edu.mju.band.api.ApiExceptionHandler}
+ * 也声明了 {@code @ExceptionHandler(Exception.class)} 兜底，两个建议器同时匹配时
+ * 谁生效取决于 bean 注册顺序——改一行 import 就可能让接口返回 HTML 错误页。
+ * 用 basePackages 把边界写成显式规则：本类只管页面控制器（controller 包），
+ * 接口控制器（api 包）由 ApiExceptionHandler 负责。</p>
  */
-@ControllerAdvice
+@ControllerAdvice(basePackages = "cn.edu.mju.band.controller")
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

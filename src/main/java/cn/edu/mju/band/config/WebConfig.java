@@ -24,6 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/task", "/task/**");   // 等价于原来的 <mvc:mapping path="/task"/> 与 /task/**
+                // 页面与接口共用一套登录态：两处都必须拦，否则接口会成为绕过登录的后门
+                .addPathPatterns("/task", "/task/**", "/api/**");   // 等价于原来的 <mvc:mapping path="/task"/> 与 /task/**
     }
 }

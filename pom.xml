@@ -29,6 +29,8 @@
         <hutool.version>5.8.47</hutool.version>
         <!-- JaCoCo 0.8.11 起支持 Java 21 字节码；本地仓库已缓存该版本 -->
         <jacoco.version>0.8.11</jacoco.version>
+        <!-- OpenAPI 文档：2.8.x 才适配 Spring Framework 6.2 / Boot 3.4，勿降级 -->
+        <springdoc.version>2.8.9</springdoc.version>
     </properties>
 
     <dependencies>
@@ -110,6 +112,28 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- ===== 实验环节二：接口文档 ===== -->
+        <!-- springdoc-openapi：运行时扫描 Controller 上的注解，生成 OpenAPI 3 描述，
+             默认地址 /v3/api-docs，并自带 Swagger UI（/swagger-ui.html）。
+             版本必须 ≥ 2.6：2.3~2.5 依赖 Spring Framework 6.1 的
+             ControllerAdviceBean(Object) 构造器，该方法在 6.2（Boot 3.4）已删除，
+             启动即 NoSuchMethodError。 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- 说明：没有引入 Knife4j。
+             Knife4j 4.5.0（当前最新）编译期绑定 springdoc 2.3.0：
+               ① 用它的 starter + springdoc 2.8.x → 访问 /v3/api-docs 抛
+                  NoSuchMethodError: SpringDocConfigProperties.getGroupConfigs()
+               ② 用它的 starter + springdoc 2.3.0 → Boot 3.4 启动失败
+                  （Spring 6.2 删除了 ControllerAdviceBean(Object) 构造器）
+               ③ 只引 knife4j-openapi3-ui 静态包 → 页面能打开但接口列表加载不出来
+             与其留一个打不开的文档入口，不如只用 springdoc 自带的 Swagger UI。
+             该取舍已写入 docs/API.md 的"工具选型"一节。 -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

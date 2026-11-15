@@ -41,3 +41,17 @@ app:
   task:
     default-page-size: 5
     max-page-size: 100
+
+# ===== 实验环节二：接口文档 =====
+# springdoc 扫描 Controller 注解生成 OpenAPI 3 描述，并自带 Swagger UI。
+# 两个地址（都不受登录拦截器保护，未登录也能查看文档）：
+#   http://localhost:8088/swagger-ui/index.html  Swagger UI 交互界面（答辩演示用这个）
+#   http://localhost:8088/v3/api-docs            OpenAPI 3 JSON（可导入 Postman / Apifox）
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html        # 访问 /swagger-ui.html 会自动跳到 /swagger-ui/index.html
+    tags-sorter: alpha            # 标签按字母序，界面稳定不跳动
+    operations-sorter: method     # 同一标签内按 GET/POST/PUT/DELETE 排序
+  default-produces-media-type: application/json

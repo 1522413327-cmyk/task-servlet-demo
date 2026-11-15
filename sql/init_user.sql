@@ -1,5 +1,11 @@
 -- 用户表（登录验证用）
--- 在 taskmaster 库中执行
+-- 本脚本自带建库语句，可单独执行：mysql -uroot -p < sql/init_user.sql
+CREATE DATABASE IF NOT EXISTS taskmaster
+    DEFAULT CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
+
+USE taskmaster;
+
 CREATE TABLE IF NOT EXISTS t_user (
     id          INT PRIMARY KEY AUTO_INCREMENT,
     login_name  VARCHAR(50)  NOT NULL UNIQUE COMMENT '登录账号',
